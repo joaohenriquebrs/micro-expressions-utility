@@ -19,11 +19,24 @@ class Settings(BaseSettings):
 
     # Vídeos vivem no filesystem; o banco guarda só o caminho.
     upload_dir: Path = Path("data/uploads")
+    # Artefatos intermediários do pipeline (audio.wav, transcript.json, signals.json...).
+    job_work_dir: Path = Path("data/jobs")
 
     # Limites de upload (questionário: 200 MB / 30 min).
     max_upload_bytes: int = 200 * 1024 * 1024
     max_duration_seconds: int = 30 * 60
     allowed_content_types: tuple[str, ...] = ("video/mp4", "video/quicktime", "video/webm")
+
+    # Pipeline de processamento.
+    # False (padrão) usa os dublês determinísticos; True usa OpenCV/MediaPipe/Whisper reais.
+    use_real_pipeline: bool = False
+    whisper_model: str = "base"
+    ollama_url: str = "http://localhost:11434"
+
+    # Fila / workers.
+    job_timeout_seconds: int = 30 * 60
+    max_retries: int = 3
+    retry_backoff_seconds: tuple[int, ...] = (2, 5, 10)
 
 
 @lru_cache

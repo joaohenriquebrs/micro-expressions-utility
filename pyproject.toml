@@ -11,10 +11,18 @@ dependencies = [
     "sqlmodel>=0.0.22",
     "pydantic-settings>=2.7",
     "httpx>=0.28",
+    "psutil>=6.0",
 ]
 
-# Dependências de IA/vídeo: AUTORIZADAS na allowlist, instaladas só no Sprint 2.
-# opencv-python, mediapipe, faster-whisper, tiktoken, psutil, numpy
+[project.optional-dependencies]
+# Stack pesada de IA/vídeo: instalada sob demanda (`uv sync --extra ml`) e usada apenas
+# com APP_USE_REAL_PIPELINE=true (estágio final de aprovação). Tudo na allowlist.
+ml = [
+    "opencv-python>=4.10",
+    "mediapipe>=0.10.18",
+    "faster-whisper>=1.1",
+    "numpy>=2.0",
+]
 
 [dependency-groups]
 dev = [
@@ -76,6 +84,11 @@ exclude = ['^\.venv/']
 module = ["sqlmodel.*"]
 ignore_missing_imports = true
 
+[[tool.mypy.overrides]]
+# Bibliotecas pesadas (extra `ml`) e psutil não trazem stubs / não estão instaladas no CI.
+module = ["cv2.*", "mediapipe.*", "faster_whisper.*", "psutil.*"]
+ignore_missing_imports = true
+
 # ---------------------------------------------------------------------------
 # Pytest + cobertura (gate do Harness: cobertura >= 70%)
 # ---------------------------------------------------------------------------
@@ -88,6 +101,12 @@ addopts = "--cov=app --cov-report=term-missing --cov-fail-under=70"
 [tool.coverage.run]
 source = ["app"]
 branch = true
+omit = [
+    # Integrações reais e wiring de processo: validadas no estágio final (modelos/hardware),
+    # fora da cobertura determinística de CI.
+    "app/integrations/*",
+    "app/workers/processor.py",
+]
 
 [tool.coverage.report]
 show_missing = true

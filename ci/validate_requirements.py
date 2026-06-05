@@ -49,6 +49,9 @@ def collect_direct_dependencies(pyproject_path: Path) -> set[str]:
     specs: list[str] = []
     project = data.get("project", {})
     specs.extend(d for d in project.get("dependencies", []) if isinstance(d, str))
+    for group in project.get("optional-dependencies", {}).values():
+        if isinstance(group, list):
+            specs.extend(d for d in group if isinstance(d, str))
     for group in data.get("dependency-groups", {}).values():
         if isinstance(group, list):
             specs.extend(d for d in group if isinstance(d, str))

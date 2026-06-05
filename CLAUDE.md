@@ -6,17 +6,21 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Estado atual
 
-🚧 **Sprint 1 em construção** (esqueleto lean + mocks). Implementação iniciada a partir das
-decisões registradas em "Decisões de setup" abaixo.
+✅ **Sprint 1 concluído** (esqueleto FastAPI + contratos + CI). ✅ **Sprint 2 concluído**
+(workers, pipeline de 5 estágios, heurísticas de sinais, telemetria, gate de memória). Próximo:
+Sprint 3 (timeline → Ollama real, contagem de tokens, validação/retry do relatório).
+Relatórios por sprint: [SPRINT1.md](SPRINT1.md), [SPRINT2.md](SPRINT2.md).
 
 ## Decisões de setup (definidas com o usuário)
 
 - **Arquitetura:** FastAPI único (ver seção Arquitetura). NestJS descartado.
 - **Tooling:** **uv + `pyproject.toml`** (lockfile `uv.lock`), **Python 3.12** (`requires-python`
   e `.python-version`; mediapipe ainda não suporta 3.13/3.14 de forma estável — o uv baixa o 3.12).
-- **Escopo do Sprint 1:** esqueleto lean — só FastAPI + SQLite + infra + mocks. As libs pesadas
-  (`opencv-python`, `mediapipe`, `faster-whisper`, `tiktoken`, `psutil`, `numpy`) são **autorizadas**
-  mas só entram (instaladas/usadas) no Sprint 2.
+- **Escopo do Sprint 1:** esqueleto lean — só FastAPI + SQLite + infra + mocks.
+- **Pipeline real vs dublê (Sprint 2):** o CI roda **sempre com dublês** (determinístico). As libs
+  pesadas vivem em `app/integrations/` (import preguiçoso) e ficam num **extra opcional `ml`**
+  (`uv sync --extra ml`); só são usadas com `APP_USE_REAL_PIPELINE=true` (estágio final). `psutil`
+  é dep direta (telemetria). `app/integrations/*` e `app/workers/processor.py` ficam fora da cobertura.
 - **Gates do Harness:** rodam **localmente** via `ci/*.sh` + `docker-compose.harness.yml` (sem GitHub
   Actions por ora; migrável depois).
 - **`ffmpeg`:** dependência de sistema (não-pip), necessária só a partir do Sprint 2.
@@ -94,8 +98,25 @@ Arquitetura **Local-First** com separação rígida entre o servidor web e o pro
 - **Frontend (Sprint 4):** Next.js + React + Tailwind; upload multipart, *polling* de status a cada
   5s até `completed`, render do relatório com `react-markdown`.
 
-Layout de pastas previsto (em [plan.md](plan.md)): `app/{api,core,services,workers,validators}`,
-`mocks/`, `scripts/`, `tests/{e2e,fixtures}`, `ci/`.
+Estrutura atual do código:
+
+```
+app/
+  main.py · config.py · db.py · models.py · schemas.py
+  api/meetings.py            # endpoints /api/v1/meetings/*
+  core/                      # lógica pura e testável
+    timestamp.py timeline.py signals.py telemetry.py types.py
+  services/                  # orquestração (testada com dublês)
+    interfaces.py (Protocols) · fake_components.py · factory.py · pipeline.py · errors.py
+  integrations/              # impls reais (lazy, extra `ml`, fora da cobertura)
+    audio_ffmpeg.py frames_cv2.py whisper_real.py mediapipe_real.py ollama_real.py
+  workers/                   # fila e execução
+    manager.py (JobQueue/JobRunner) · processor.py (entrypoint mprof, nice -n 10)
+mocks/   scripts/   ci/   tests/{unit,integration}
+```
+
+Regra de ouro: **lógica nova vai em `core/` (pura) ou `services/` (orquestração) com testes**;
+o que toca hardware/modelos vai em `integrations/` atrás de um Protocol de `interfaces.py`.
 
 ## Pipeline de processamento (5 estágios com checkpoint)
 
@@ -176,8 +197,9 @@ uv run pytest                    # testes
 uv run pytest --cov=app          # com cobertura (mínimo 70%)
 uv run pytest tests/unit/test_x.py::test_y   # rodar um teste específico
 bash ci/run_tests.sh             # roda todos os gates locais (lint+type+test+cobertura)
-bash ci/validate_requirements.py # valida deps contra a allowlist
-mprof run <script> && mprof peak # telemetria de memória (< 2.5 GB) — Sprint 2+
+uv run python ci/validate_requirements.py  # valida deps contra a allowlist
+bash ci/mprof_check.sh           # gate de memória (mprof, pico < 2.5 GB)
+uv sync --extra ml               # instala a stack pesada (pipeline real, estágio final)
 docker compose up                # sandbox local (App + Banco + Ollama)
 docker compose -f docker-compose.harness.yml up   # sandbox restrita (4g/2cpu)
 ```
@@ -207,6 +229,7 @@ Para não consumir hardware no CI, as integrações pesadas são substituídas p
 - [.specs/spec.md](.specs/spec.md) — spec do Harness + roadmap de 4 sprints (Agent Directives + gates por sprint).
 - [.specs/PRD_SaaS_Lean_Ollama_MVP.md](.specs/PRD_SaaS_Lean_Ollama_MVP.md) — PRD do produto (RF-001…RF-005, KPIs, IA responsável, riscos).
 - [.specs/Harness_Engineering_System_Design_Questionnaire.md](.specs/Harness_Engineering_System_Design_Questionnaire.md) — **questionário de design (120 decisões, fonte mais detalhada)**. ⚠️ O Bloco 1 propõe NestJS+FastAPI, mas a arquitetura canônica é **FastAPI único** (ver acima).
+- [.specs/DESIGN.md](.specs/DESIGN.md) — **design system do frontend** (tokens, tipografia, componentes, motion, acessibilidade; estilo Linear/Vercel/Notion). É a **fonte da verdade visual** a seguir ao construir a UI Next.js do **Sprint 4** (React + Tailwind, Inter + JetBrains Mono, 2 cores por tela, sem gradientes/sombras pesadas).
 - [plan.md](plan.md) — plano de implementação: requisitos sintetizados REQ-001…REQ-010, fases P1–P4, tarefas **T001–T020** e matriz de rastreabilidade.
 - [research.md](research.md) — clarificações pendentes (whitelist de pacotes; estratégia de produção).
 - [checkpoints/](checkpoints/) — rastreabilidade YAML: `spec-to-plan.yaml` (REQ→Plano) e `plan-to-tasks.yaml` (Plano→Tasks).
