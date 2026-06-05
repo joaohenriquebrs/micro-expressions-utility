@@ -1,0 +1,53 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+
+# uv / virtualenv
+.venv/
+venv/
+
+# Test / coverage / typing caches
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+coverage.xml
+htmlcov/
+mprofile_*.dat
+
+# Banco de dados local e dados de trabalho
+*.db
+*.sqlite
+*.sqlite3
+/var/data/
+data/uploads/
+data/jobs/
+
+# Mídia / artefatos de processamento (não versionar binários pesados)
+*.mp4
+*.mov
+*.webm
+*.wav
+# exceção: fixtures de teste pequenos são versionados explicitamente
+!tests/fixtures/*.mp4
+!tests/fixtures/*.wav
+
+# Ambiente / segredos
+.env
+.env.*
+!.env.example
+
+# Frontend (Sprint 4)
+node_modules/
+.next/
+
+# SO / editores
+.DS_Store
+*.swp
+.idea/
+.vscode/
