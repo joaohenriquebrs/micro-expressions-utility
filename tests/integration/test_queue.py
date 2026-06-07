@@ -16,6 +16,7 @@ from app.services.fake_components import (
     FakeAudioExtractor,
     FakeFaceAnalyzer,
     FakeReportGenerator,
+    FakeSummarizer,
     FakeTranscriber,
 )
 from app.services.pipeline import PipelineComponents
@@ -85,6 +86,7 @@ def test_process_job_retries_then_fails(engine: Engine, tmp_path: Path) -> None:
         transcriber=flaky,
         face=FakeFaceAnalyzer(),
         report=FakeReportGenerator(),
+        summarizer=FakeSummarizer(),
     )
     settings = Settings(job_work_dir=tmp_path, max_retries=3, retry_backoff_seconds=(0, 0, 0))
     runner = JobRunner(engine, settings, components=components, sleep=_noop_sleep)
@@ -108,6 +110,7 @@ def test_process_job_definitive_fails_immediately(engine: Engine, tmp_path: Path
         transcriber=FakeTranscriber(),
         face=BrokenFace(),
         report=FakeReportGenerator(),
+        summarizer=FakeSummarizer(),
     )
     settings = Settings(job_work_dir=tmp_path)
     runner = JobRunner(engine, settings, components=components, sleep=_noop_sleep)

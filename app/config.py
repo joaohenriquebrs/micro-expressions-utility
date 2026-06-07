@@ -32,6 +32,8 @@ class Settings(BaseSettings):
     use_real_pipeline: bool = False
     whisper_model: str = "base"
     ollama_url: str = "http://localhost:11434"
+    # Orçamento de tokens do LLM: acima disso, comprime o contexto (sumarização hierárquica).
+    max_context_tokens: int = 7500
 
     # Fila / workers.
     job_timeout_seconds: int = 30 * 60

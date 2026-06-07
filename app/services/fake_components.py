@@ -5,7 +5,7 @@ Reaproveitam os dados fixos de ``mocks/`` e implementam os Protocols de ``interf
 
 from pathlib import Path
 
-from app.core.types import Segment, SignalEvent, TimelineEntry
+from app.core.types import Segment, SignalEvent
 from mocks.mediapipe_fake import analyze as fake_mediapipe
 from mocks.ollama_fake import generate_report as fake_ollama
 from mocks.whisper_fake import transcribe as fake_whisper
@@ -42,6 +42,12 @@ class FakeFaceAnalyzer:
         return [SignalEvent.from_dict(sig) for sig in fake_mediapipe(str(video_path))]
 
 
+class FakeSummarizer:
+    def summarize(self, text: str) -> str:
+        snippet = text.strip().splitlines()[0][:120] if text.strip() else ""
+        return f"[resumo] {snippet}" if snippet else ""
+
+
 class FakeReportGenerator:
-    def generate(self, segments: list[Segment], timeline: list[TimelineEntry]) -> str:
-        return fake_ollama("")
+    def generate(self, prompt: str, *, temperature: float = 0.7) -> str:
+        return fake_ollama(prompt)

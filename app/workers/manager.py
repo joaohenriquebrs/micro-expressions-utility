@@ -115,6 +115,7 @@ class JobRunner:
                         video_path=video_path,
                         components=self._components,
                         telemetry=telemetry,
+                        max_context_tokens=self._settings.max_context_tokens,
                     )
                 except DefinitiveError as exc:
                     self._fail(session, job, f"erro definitivo: {exc}")

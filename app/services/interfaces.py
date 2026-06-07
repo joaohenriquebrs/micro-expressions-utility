@@ -7,7 +7,7 @@ sem alterar o orquestrador.
 from pathlib import Path
 from typing import Protocol
 
-from app.core.types import Segment, SignalEvent, TimelineEntry
+from app.core.types import Segment, SignalEvent
 
 
 class AudioExtractor(Protocol):
@@ -28,7 +28,13 @@ class FaceAnalyzer(Protocol):
         ...
 
 
+class Summarizer(Protocol):
+    def summarize(self, text: str) -> str:
+        """Resume um bloco de texto preservando informações comerciais críticas."""
+        ...
+
+
 class ReportGenerator(Protocol):
-    def generate(self, segments: list[Segment], timeline: list[TimelineEntry]) -> str:
-        """Gera o relatório final em Markdown a partir da transcrição e da timeline."""
+    def generate(self, prompt: str, *, temperature: float = 0.7) -> str:
+        """Gera o relatório final em Markdown a partir do prompt já montado."""
         ...

@@ -92,8 +92,8 @@ P4.3: Documentar procedimentos de bloqueio de dependências no CI e validação 
 - [x] T012 [Plan:2.4] `mprof` via `ci/mprof_check.sh` + `app/workers/processor.py`; aborta se pico > 2.5GB.
 - [x] T013 [Plan:3.1] `app/core/timestamp.py` (frame→ms) com testes unitários.
 - [x] T014 [Plan:3.2] `app/core/timeline.py` (+ `signals.py`) agrupando sinais e transcrições, com testes das heurísticas.
-- [ ] T015 [Plan:3.2] Adicionar integração HTTP cliente para Ollama local em `app/services/llm_client.py`.
-- [ ] T016 [Plan:3.3] Implementar `app/validators/report_validator.py` que valida se subtítulos exigidos existem; retry com temperature ajustado.
+- [x] T015 [Plan:3.2] Cliente HTTP do Ollama em `app/integrations/ollama_real.py` (+ `OllamaSummarizer`, `tiktoken_counter`).
+- [x] T016 [Plan:3.3] Validação dos subtítulos em `app/core/report.py` + retry `temperature=0.2` em `app/services/report_builder.py`. (contexto/compressão em `app/services/context.py`)
 - [ ] T017 [Plan:4.1] Implementar endpoints de upload e status em `app/api/meetings.py` e handlers Pydantic para upload.
 - [ ] T018 [Plan:4.2] Escrever teste E2E `tests/e2e/test_pipeline_e2e.py` que usa o vídeo padrão e mocks.
 - [ ] T019 [Plan:4.2] Criar o arquivo de vídeo padrão `tests/fixtures/mock_video_10s.mp4` e fixture de áudio com a frase em PT.

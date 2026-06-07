@@ -22,6 +22,7 @@ ml = [
     "mediapipe>=0.10.18",
     "faster-whisper>=1.1",
     "numpy>=2.0",
+    "tiktoken>=0.8",
 ]
 
 [dependency-groups]
@@ -86,7 +87,7 @@ ignore_missing_imports = true
 
 [[tool.mypy.overrides]]
 # Bibliotecas pesadas (extra `ml`) e psutil não trazem stubs / não estão instaladas no CI.
-module = ["cv2.*", "mediapipe.*", "faster_whisper.*", "psutil.*"]
+module = ["cv2.*", "mediapipe.*", "faster_whisper.*", "psutil.*", "tiktoken.*"]
 ignore_missing_imports = true
 
 # ---------------------------------------------------------------------------

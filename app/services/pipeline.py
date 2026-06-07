@@ -6,6 +6,7 @@ Cada estágio persiste seu artefato; se o artefato já existe (e ``force`` é fa
 """
 
 import json
+from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -13,8 +14,17 @@ from typing import Any
 from app.core.signals import SCHEMA_VERSION
 from app.core.telemetry import Telemetry, measure
 from app.core.timeline import build_timeline
+from app.core.tokens import estimate_tokens
 from app.core.types import Segment, SignalEvent, TimelineEntry
-from app.services.interfaces import AudioExtractor, FaceAnalyzer, ReportGenerator, Transcriber
+from app.services.context import DEFAULT_MAX_TOKENS, build_context
+from app.services.interfaces import (
+    AudioExtractor,
+    FaceAnalyzer,
+    ReportGenerator,
+    Summarizer,
+    Transcriber,
+)
+from app.services.report_builder import generate_validated_report
 
 AUDIO_FILE = "audio.wav"
 TRANSCRIPT_FILE = "transcript.json"
@@ -29,6 +39,8 @@ class PipelineComponents:
     transcriber: Transcriber
     face: FaceAnalyzer
     report: ReportGenerator
+    summarizer: Summarizer
+    count_tokens: Callable[[str], int] = estimate_tokens
 
 
 @dataclass
@@ -55,6 +67,7 @@ def run_pipeline(
     components: PipelineComponents,
     telemetry: Telemetry | None = None,
     force: bool = False,
+    max_context_tokens: int = DEFAULT_MAX_TOKENS,
 ) -> PipelineResult:
     job_dir.mkdir(parents=True, exist_ok=True)
     telemetry = telemetry or Telemetry()
@@ -95,12 +108,20 @@ def run_pipeline(
         timeline = build_timeline(segments, signals)
         _save_json(timeline_path, [e.to_dict() for e in timeline])
 
-    # 5) llm-analysis
+    # 5) llm-analysis (orçamento de tokens + compressão + validação/retry)
     with measure(telemetry, "llm-analysis"):
         if not force and report_path.exists():
             report_markdown = report_path.read_text(encoding="utf-8")
         else:
-            report_markdown = components.report.generate(segments, timeline)
+            context = build_context(
+                segments,
+                timeline,
+                summarizer=components.summarizer,
+                count_tokens=components.count_tokens,
+                max_tokens=max_context_tokens,
+            )
+            output = generate_validated_report(prompt=context.prompt, generator=components.report)
+            report_markdown = output.markdown
             report_path.write_text(report_markdown, encoding="utf-8")
 
     return PipelineResult(

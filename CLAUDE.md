@@ -6,10 +6,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Estado atual
 
-✅ **Sprint 1 concluído** (esqueleto FastAPI + contratos + CI). ✅ **Sprint 2 concluído**
-(workers, pipeline de 5 estágios, heurísticas de sinais, telemetria, gate de memória). Próximo:
-Sprint 3 (timeline → Ollama real, contagem de tokens, validação/retry do relatório).
-Relatórios por sprint: [SPRINT1.md](SPRINT1.md), [SPRINT2.md](SPRINT2.md).
+✅ **Sprint 1** (esqueleto FastAPI + contratos + CI). ✅ **Sprint 2** (workers, pipeline de 5
+estágios, heurísticas de sinais, telemetria, gate de memória). ✅ **Sprint 3** (contexto do LLM com
+orçamento de tokens + sumarização hierárquica, prompt estruturado, validação por regex + retry
+`temperature=0.2`, Ollama/tiktoken reais atrás da fronteira). Próximo: **Sprint 4** (frontend Next.js
++ E2E). Relatórios: [SPRINT1.md](SPRINT1.md), [SPRINT2.md](SPRINT2.md), [SPRINT3.md](SPRINT3.md).
 
 ## Decisões de setup (definidas com o usuário)
 
@@ -105,11 +106,12 @@ app/
   main.py · config.py · db.py · models.py · schemas.py
   api/meetings.py            # endpoints /api/v1/meetings/*
   core/                      # lógica pura e testável
-    timestamp.py timeline.py signals.py telemetry.py types.py
+    timestamp.py timeline.py signals.py telemetry.py types.py tokens.py prompt.py report.py
   services/                  # orquestração (testada com dublês)
-    interfaces.py (Protocols) · fake_components.py · factory.py · pipeline.py · errors.py
+    interfaces.py (Protocols) · fake_components.py · factory.py · pipeline.py
+    context.py (orçamento+compressão) · report_builder.py (validação+retry) · errors.py
   integrations/              # impls reais (lazy, extra `ml`, fora da cobertura)
-    audio_ffmpeg.py frames_cv2.py whisper_real.py mediapipe_real.py ollama_real.py
+    audio_ffmpeg.py frames_cv2.py whisper_real.py mediapipe_real.py ollama_real.py tiktoken_counter.py
   workers/                   # fila e execução
     manager.py (JobQueue/JobRunner) · processor.py (entrypoint mprof, nice -n 10)
 mocks/   scripts/   ci/   tests/{unit,integration}
