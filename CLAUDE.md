@@ -6,11 +6,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Estado atual
 
-✅ **Sprint 1** (esqueleto FastAPI + contratos + CI). ✅ **Sprint 2** (workers, pipeline de 5
-estágios, heurísticas de sinais, telemetria, gate de memória). ✅ **Sprint 3** (contexto do LLM com
-orçamento de tokens + sumarização hierárquica, prompt estruturado, validação por regex + retry
-`temperature=0.2`, Ollama/tiktoken reais atrás da fronteira). Próximo: **Sprint 4** (frontend Next.js
-+ E2E). Relatórios: [SPRINT1.md](SPRINT1.md), [SPRINT2.md](SPRINT2.md), [SPRINT3.md](SPRINT3.md).
+✅ **MVP completo — 4 sprints concluídos.** S1 (esqueleto FastAPI + contratos + CI), S2 (workers,
+pipeline de 5 estágios, sinais, telemetria, gate de memória), S3 (contexto do LLM: tokens +
+sumarização hierárquica, validação/retry do relatório, Ollama/tiktoken reais), **S4 (frontend
+Next.js seguindo o DESIGN.md, auth básica, retenção, logs JSON, teste E2E)**. Relatórios:
+[SPRINT1.md](SPRINT1.md), [SPRINT2.md](SPRINT2.md), [SPRINT3.md](SPRINT3.md), [SPRINT4.md](SPRINT4.md).
 
 ## Decisões de setup (definidas com o usuário)
 
@@ -103,8 +103,8 @@ Estrutura atual do código:
 
 ```
 app/
-  main.py · config.py · db.py · models.py · schemas.py
-  api/meetings.py            # endpoints /api/v1/meetings/*
+  main.py · config.py · db.py · models.py · schemas.py · security.py · observability.py
+  api/meetings.py · api/auth.py   # endpoints /api/v1/meetings/* e /api/v1/auth/login
   core/                      # lógica pura e testável
     timestamp.py timeline.py signals.py telemetry.py types.py tokens.py prompt.py report.py
   services/                  # orquestração (testada com dublês)
@@ -114,7 +114,9 @@ app/
     audio_ffmpeg.py frames_cv2.py whisper_real.py mediapipe_real.py ollama_real.py tiktoken_counter.py
   workers/                   # fila e execução
     manager.py (JobQueue/JobRunner) · processor.py (entrypoint mprof, nice -n 10)
-mocks/   scripts/   ci/   tests/{unit,integration}
+  services/retention.py      # purge de vídeos > 7 dias (cron)
+frontend/                    # Next.js + Tailwind (DESIGN.md): login, upload, polling, react-markdown
+mocks/   scripts/   ci/   tests/{unit,integration,e2e}
 ```
 
 Regra de ouro: **lógica nova vai em `core/` (pura) ou `services/` (orquestração) com testes**;

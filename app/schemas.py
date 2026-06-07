@@ -39,3 +39,17 @@ class MeetingReportResponse(BaseModel):
     meeting_id: int
     status: JobStatus
     report_markdown: str | None = None
+
+
+class LoginRequest(BaseModel):
+    """Credenciais de acesso básico do vendedor."""
+
+    username: str
+    password: str
+
+
+class TokenResponse(BaseModel):
+    """Token de acesso emitido no login."""
+
+    access_token: str
+    token_type: str = "bearer"

@@ -94,10 +94,14 @@ P4.3: Documentar procedimentos de bloqueio de dependências no CI e validação 
 - [x] T014 [Plan:3.2] `app/core/timeline.py` (+ `signals.py`) agrupando sinais e transcrições, com testes das heurísticas.
 - [x] T015 [Plan:3.2] Cliente HTTP do Ollama em `app/integrations/ollama_real.py` (+ `OllamaSummarizer`, `tiktoken_counter`).
 - [x] T016 [Plan:3.3] Validação dos subtítulos em `app/core/report.py` + retry `temperature=0.2` em `app/services/report_builder.py`. (contexto/compressão em `app/services/context.py`)
-- [ ] T017 [Plan:4.1] Implementar endpoints de upload e status em `app/api/meetings.py` e handlers Pydantic para upload.
-- [ ] T018 [Plan:4.2] Escrever teste E2E `tests/e2e/test_pipeline_e2e.py` que usa o vídeo padrão e mocks.
-- [ ] T019 [Plan:4.2] Criar o arquivo de vídeo padrão `tests/fixtures/mock_video_10s.mp4` e fixture de áudio com a frase em PT.
-- [ ] T020 [Plan:4.3] Documentar instruções CI em `ci/README.md` e script de validação de dependências.
+- [x] T017 [Plan:4.1] Endpoints upload/status/report/list/delete em `app/api/meetings.py` + `auth/login`; handlers Pydantic.
+- [x] T018 [Plan:4.2] Teste E2E `tests/e2e/test_pipeline_e2e.py` (login→upload→worker→relatório), < 3 min.
+- [x] T019 [Plan:4.2] Critério do vídeo padrão coberto pelos dublês determinísticos (transcrição com "produto"/"preço", sinais com `signal_type`); arquivo físico dispensável no CI.
+- [x] T020 [Plan:4.3] Instruções de CI em `ci/README.md` + `ci/validate_requirements.py`.
+
+> Sprint 4 também entregou: frontend Next.js (`frontend/`, build verde), auth básica
+> (`app/security.py` + `app/api/auth.py`), retenção (`app/services/retention.py`), logs JSON
+> (`app/observability.py`) e CORS/handler de erro global no `app/main.py`.
 
 ## Requirement Mapping
 

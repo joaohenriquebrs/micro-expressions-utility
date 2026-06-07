@@ -40,6 +40,18 @@ class Settings(BaseSettings):
     max_retries: int = 3
     retry_backoff_seconds: tuple[int, ...] = (2, 5, 10)
 
+    # Auth básica (dev). Em produção, sobrescrever via env e usar senhas fortes.
+    auth_username: str = "vendedor"
+    auth_password: str = "changeme"
+    auth_secret: str = "dev-secret-change-me"
+    auth_token_ttl_seconds: int = 8 * 60 * 60
+
+    # CORS (frontend Next.js).
+    cors_origins: tuple[str, ...] = ("http://localhost:3000",)
+
+    # Retenção: apaga vídeos do disco após N dias.
+    retention_days: int = 7
+
 
 @lru_cache
 def get_settings() -> Settings:
